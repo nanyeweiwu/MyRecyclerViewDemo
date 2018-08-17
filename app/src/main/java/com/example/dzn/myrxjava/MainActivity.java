@@ -11,8 +11,10 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-import rx.Observable;
-import rx.Subscriber;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.functions.Consumer;
 
 public class MainActivity extends Activity {
 
@@ -125,29 +127,22 @@ public class MainActivity extends Activity {
 
     public void test() {
         final TestBean test = new TestBean("nima", "wocao", "nimei");
-        Observable<Object> myObservable = Observable.create(new Observable.OnSubscribe<Object>() {
+        Observable<Object> myObservable = Observable.create(
+                new ObservableOnSubscribe<Object>() {
+                    @Override
+                    public void subscribe(ObservableEmitter<Object> e) throws Exception {
+                        e.onNext(test);
+                    }
+                }
+        );
+        Consumer<Object> mySuvscriber = new Consumer<Object>() {
             @Override
-            public void call(Subscriber<? super Object> subscriber) {
-                subscriber.onNext(test);
-                subscriber.onCompleted();
-            }
-        });
-        Subscriber<Object> mySubscriber = new Subscriber<Object>() {
-            @Override
-            public void onCompleted() {
-            }
-
-            @Override
-            public void onError(Throwable e) {
-            }
-
-            @Override
-            public void onNext(Object o) {
+            public void accept(Object o) throws Exception {
                 TestBean test = (TestBean) o;
                 Toast.makeText(MainActivity.this, test.getName() + test.getSchool() + test.getSex(), Toast.LENGTH_SHORT).show();
             }
         };
-        myObservable.subscribe(mySubscriber);
+        myObservable.subscribe(mySuvscriber);
     }
 
 }
